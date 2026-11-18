@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { MAX_QTY_PER_PRODUCT } from '@/lib/config'
-import { CrystalBackdrop, flyThrough } from '../rtx3d'
+import { CartFly, CrystalBackdrop, UiFx, flyThrough } from '../rtx3d'
 import { AuthModal, WelcomeAuthScreen } from './auth'
 import { WelcomeToast } from './welcome-toast'
 import { CartDrawer, OrderSuccess, type CartLine, type PlacedOrder } from './cart'
@@ -234,6 +234,8 @@ export function ShopApp({ user, catalog: initialCatalog, initialDashboard }: Pro
   return (
     <ShopCtx.Provider value={ctx}>
       <CrystalBackdrop ambient={view !== 'store'} />
+      <UiFx />
+      <CartFly bump={bump} />
       {body}
       {welcome && <WelcomeToast onDone={() => setWelcome(false)} />}
       <AuthModal mode={auth} onMode={setAuth} onClose={() => setAuth(null)} />

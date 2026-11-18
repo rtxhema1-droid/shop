@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNod
 import {
   Check, ChevronDown, Heart, LayoutDashboard, LayoutGrid, LogIn, LogOut, Menu, MessageCircle, Minus,
   PackageSearch, Plus, Search, ShoppingBag, ShoppingCart, Store, UserRound, X,
+  Cpu, Gamepad2, Headphones, Sparkles,
 } from 'lucide-react'
 import { CrystalButton, FxToggle, GlassDock, HoloCard, HoloPodium, flyThrough, fx } from '../rtx3d'
 import { MAX_QTY_PER_PRODUCT, PLACEHOLDERS, PROMISE, PROMISE_SUB, STORE_NAME, WHATSAPP_DISPLAY } from '@/lib/config'
@@ -18,7 +19,7 @@ const style = (vars: Record<string, string | number>) => vars as CSSProperties
 function Wordmark({ small }: { small?: boolean }) {
   return (
     <span className={`wordmark ${small ? 'wordmark-sm' : ''}`} aria-hidden="true">
-      <span>RTX</span><i /><em>HEMA</em>
+      <span>RTX</span><i /><em>SHOP</em>
     </span>
   )
 }
@@ -143,7 +144,7 @@ function UserMenu({ onOrders, onDash }: { onOrders: () => void; onDash: () => vo
   const staff = user.role !== 'user'
   return (
     <div className="umenu" ref={ref}>
-      <button className="avatar-btn" type="button" onClick={() => setOpen(!open)} aria-expanded={open} aria-label="حسابي">
+      <button className="avatar-btn" type="button" onClick={() => setOpen(!open)} aria-expanded={open} aria-label="حسابي" data-tip="حسابي">
         <span>{user.name.slice(0, 1)}</span>
       </button>
       <div className={`dropdown ${open ? 'open' : ''}`}>
@@ -180,6 +181,19 @@ export function Header(props: {
 }) {
   const { user, openAuth } = useShop()
   const [dockTab, setDockTab] = useState<'home' | 'cats' | 'cart' | 'profile'>('home')
+  const searchRef = useRef<HTMLInputElement>(null)
+  // اختصار «/» بيفتح البحث من أي مكان (على الكمبيوتر)
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== '/' || event.ctrlKey || event.metaKey || event.altKey) return
+      const target = event.target as HTMLElement | null
+      if (target && (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))) return
+      event.preventDefault()
+      searchRef.current?.focus()
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [])
   const activeTop = props.tree.find((node) => node.id === props.selected || node.children.some((child) => child.id === props.selected))?.id ?? null
   const dockItems = [{ id: null, label: 'الكل' }, ...props.tree.slice(0, 7).map((node) => ({ id: node.id as string | null, label: node.name }))]
 
@@ -200,13 +214,14 @@ export function Header(props: {
           <MegaMenu tree={props.tree} counts={props.counts} selected={props.selected} onSelect={props.onSelect} />
           <label className="search">
             <Search />
-            <input value={props.query} onChange={(event) => props.onQuery(event.target.value)} placeholder="ابحث عن منتج…" aria-label="بحث" maxLength={80} />
+            <input ref={searchRef} value={props.query} onChange={(event) => props.onQuery(event.target.value)} placeholder="ابحث عن منتج…" aria-label="بحث" maxLength={80} />
+            {!props.query && <kbd className="search-kbd" aria-hidden="true">/</kbd>}
             {props.query && <button type="button" className="icon-btn" onClick={() => props.onQuery('')} aria-label="مسح البحث"><X /></button>}
           </label>
           <div className="header-actions">
             <FxToggle />
             <UserMenu onOrders={props.onOrders} onDash={props.onDash} />
-            <button className="cart-btn" type="button" onClick={props.onCart} aria-label={`السلة (${props.cartCount})`}>
+            <button className="cart-btn" type="button" onClick={props.onCart} aria-label={`السلة (${props.cartCount})`} data-tip="السلة">
               <ShoppingCart />
               {props.cartCount > 0 && <b key={props.bump} className="cart-count">{props.cartCount}</b>}
             </button>
@@ -469,6 +484,78 @@ function ProductModal({
 type Sort = 'new' | 'cheap' | 'expensive'
 const PAGE = 24
 
+
+// ───────────────────────── لوحات العرض (Showcase) ─────────────────────────
+
+const SHOWCASE: { key: string; title: string; match: RegExp; cls: string; icon: typeof Sparkles }[] = [
+  { key: 'main', title: 'عرض المنتج 3D', match: /(جوردن|jordan|حذاء|كوتش|بلايستيشن|ps5|playstation)/i, cls: 'sc-main', icon: Sparkles },
+  { key: 'gpu', title: 'كروت الشاشة / تك', match: /(rtx|gpu|كرت|geforce|معالج|لاب|كمبيوتر)/i, cls: 'sc-gpu', icon: Cpu },
+  { key: 'toys', title: 'بوب كلتشر وألعاب', match: /(ألعاب|العاب|toy|figure|تمثال|مجسم|gundam|أكشن)/i, cls: 'sc-toys', icon: Gamepad2 },
+  { key: 'gear', title: 'جير و AR', match: /(سماع|headset|headphone|نظارات|vr|ar |جيمنج|ماوس|كيبورد)/i, cls: 'sc-gear', icon: Headphones },
+]
+
+function Showcase({ products, categories, onOpen, onAdd, onSelect, onShop }: { products: Product[]; categories: Catalog['categories']; onOpen: (product: Product) => void; onAdd: (product: Product, quantity?: number) => void; onSelect: (id: string | null) => void; onShop: () => void }) {
+  const picks = useMemo(() => {
+    const used = new Set<string>()
+    const pool = products.filter((product) => product.imageUrl)
+    const take = (match: RegExp, count: number) => {
+      const found = pool.filter((product) => !used.has(product.id) && match.test(`${product.name} ${categoryPath(categories, product.categoryId)}`)).slice(0, count)
+      for (const product of pool) {
+        if (found.length >= count) break
+        if (!used.has(product.id) && !found.includes(product)) found.push(product)
+      }
+      found.forEach((product) => used.add(product.id))
+      return found
+    }
+    return SHOWCASE.map((panel) => ({ ...panel, items: take(panel.match, panel.key === 'main' ? 2 : panel.key === 'gear' ? 2 : 1) }))
+  }, [products, categories])
+  if (products.length === 0) return null
+  const cartPicks = picks.flatMap((panel) => panel.items).slice(0, 3)
+  return (
+    <section className="section showcase" aria-label="عروض مختارة">
+      <div className="showcase-grid">
+        {picks.map((panel) => {
+          if (panel.items.length === 0) return null
+          const Icon = panel.icon
+          const lead = panel.items[0]
+          return (
+            <HoloCard key={panel.key} className={`sc-panel ${panel.cls}`} strength={5}>
+              <header className="sc-tab"><Icon aria-hidden="true" /><span>{panel.title}</span></header>
+              <div className="sc-media">
+                <HoloPodium />
+                {panel.items.map((product) => (
+                  <button key={product.id} type="button" className="sc-item" onClick={() => onOpen(product)} aria-label={`${product.name} — ${money(product.priceCents)}`}>
+                    <ProductImage src={product.imageUrl} alt={product.name} sizes="(max-width: 1000px) 45vw, 260px" />
+                  </button>
+                ))}
+              </div>
+              <footer className="sc-foot">
+                <strong>{lead.name}</strong>
+                <span className={lead.stock > 0 ? 'sc-stock' : 'sc-out'}>{lead.stock > 0 && <Check aria-hidden="true" />}{lead.stock > 0 ? 'متوفر' : 'نفد'} · {money(lead.priceCents)}</span>
+                <button type="button" className="sc-cta" onClick={() => onOpen(lead)}><PackageSearch aria-hidden="true" />{panel.key === 'main' ? 'افحصه 3D' : panel.key === 'gear' ? 'جرّبه' : 'التفاصيل'}</button>
+              </footer>
+            </HoloCard>
+          )
+        })}
+        {cartPicks.length > 0 && (
+          <HoloCard className="sc-panel sc-cart" strength={5}>
+            <header className="sc-tab"><ShoppingBag aria-hidden="true" /><span>مخزني وسلتي</span></header>
+            <ul className="sc-list">
+              {cartPicks.map((product) => (
+                <li key={product.id}>
+                  <div className="sc-thumb"><ProductImage src={product.imageUrl} alt="" sizes="56px" /></div>
+                  <div><strong>{product.name}</strong><span>{money(product.priceCents)}</span></div>
+                  <button type="button" className="sc-cta" disabled={product.stock <= 0} onClick={() => onAdd(product)}><ShoppingCart aria-hidden="true" />اشتري دلوقتي</button>
+                </li>
+              ))}
+            </ul>
+            <button type="button" className="sc-more" onClick={() => { onSelect(null); onShop() }}>شوف كل المنتجات</button>
+          </HoloCard>
+        )}
+      </div>
+    </section>
+  )
+}
 export function Home(props: {
   catalog: Catalog
   tree: CategoryNode[]
@@ -532,6 +619,7 @@ export function Home(props: {
   return (
     <>
       {showHero && <Hero onShop={scrollToProducts} feature={feature} productCount={props.catalog.products.length} categoryCount={props.tree.length} categories={props.catalog.categories} />}
+      {showHero && <Showcase products={props.catalog.products} categories={props.catalog.categories} onOpen={setOpen} onAdd={props.onAdd} onSelect={props.onSelect} onShop={scrollToProducts} />}
       <CategoryTiles tree={props.tree} categories={props.catalog.categories} products={props.catalog.products} counts={props.counts} selected={props.selected} total={props.catalog.products.length} onSelect={props.onSelect} />
       {siblings.length > 0 && (
         <section className="section chips-row" aria-label="الأقسام الفرعية">

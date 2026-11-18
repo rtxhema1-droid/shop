@@ -21,7 +21,7 @@ export function WelcomeToast({ onDone }: { onDone: () => void }) {
     <div className="welcome-layer" role="status" aria-live="polite">
       <button type="button" className={`welcome-card${leaving ? ' leave' : ''}`} onClick={() => setLeaving(true)}>
         <span className="welcome-mark" aria-hidden="true"><ShoppingBag /></span>
-        <span className="welcome-text">Welcome to RTX HEMA</span>
+        <span className="welcome-text">Welcome to RTX SHOP</span>
       </button>
     </div>
   )

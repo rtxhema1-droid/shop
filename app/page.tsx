@@ -17,7 +17,7 @@ export default async function HomePage() {
     if (error instanceof DbNotConfiguredError) {
       return (
         <main className="setup-notice">
-          <h1>RTX HEMA — فاضل خطوة واحدة</h1>
+          <h1>RTX SHOP — فاضل خطوة واحدة</h1>
           <p>قاعدة البيانات لسه متوصلتش بالموقع.</p>
           <ol>
             <li>افتح مشروعك في Vercel ← <b>Storage</b> ← اعمل <b>Postgres (Neon)</b> وارفطه بالمشروع.</li>

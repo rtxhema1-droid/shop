@@ -83,7 +83,7 @@ export function WelcomeAuthScreen() {
     <main className="gate">
       <section className="gate-art" aria-hidden="true">
         <div className="gate-art-in">
-          <span className="gate-kicker">RTX HEMA</span>
+          <span className="gate-kicker">RTX SHOP</span>
           <p className="gate-quote">{PROMISE}</p>
           <p className="gate-sub">{PROMISE_SUB}</p>
         </div>

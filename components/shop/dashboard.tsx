@@ -61,7 +61,7 @@ export function DashboardApp({ user, dashboard, categories, zones, reload, reloa
   return (
     <div className="dash">
       <aside className="dash-side">
-        <div className="dash-brand"><span className="logo-mark"><Store /></span><div><strong>RTX HEMA</strong><small>{isOwner ? 'لوحة المالك' : 'لوحة التاجر'}</small></div></div>
+        <div className="dash-brand"><span className="logo-mark"><Store /></span><div><strong>RTX SHOP</strong><small>{isOwner ? 'لوحة المالك' : 'لوحة التاجر'}</small></div></div>
         <nav className="dash-nav" aria-label="القائمة">
           {nav.map((item) => (
             <button key={item.id} type="button" className={current === item.id ? 'on' : ''} onClick={() => setPage(item.id)}>

@@ -2,20 +2,21 @@ import type { Metadata, Viewport } from 'next'
 import { Cairo } from 'next/font/google'
 import './globals.css'
 import './rtx-hema.css'
+import { IconDefs } from '@/components/rtx3d/icon-defs'
 
 const cairo = Cairo({ subsets: ['arabic', 'latin'], display: 'swap', variable: '--font-cairo' })
 
 export const metadata: Metadata = {
-  title: 'RTX HEMA | الدفع كاش عند الاستلام',
-  description: 'RTX HEMA — متجر إلكتروني مصري. الدفع كاش عند الاستلام وشحن لكل محافظات مصر.',
-  applicationName: 'RTX HEMA',
+  title: 'RTX SHOP | الدفع كاش عند الاستلام',
+  description: 'RTX SHOP — متجر إلكتروني مصري. الدفع كاش عند الاستلام وشحن لكل محافظات مصر.',
+  applicationName: 'RTX SHOP',
   icons: { icon: '/icon.svg' },
   openGraph: {
-    title: 'RTX HEMA',
+    title: 'RTX SHOP',
     description: 'الدفع كاش عند الاستلام وشحن لكل محافظات مصر',
     locale: 'ar_EG',
     type: 'website',
-    siteName: 'RTX HEMA',
+    siteName: 'RTX SHOP',
   },
 }
 
@@ -33,7 +34,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body>{children}</body>
+      <body>
+        <IconDefs />
+        {children}
+      </body>
     </html>
   )
 }

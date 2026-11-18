@@ -11,6 +11,8 @@ import { fx } from './fx-store'
 export type Tier = 'high' | 'low'
 
 const CYAN = new THREE.Color('#00F0FF')
+const GOLD = new THREE.Color('#FFC857')
+const BLUE = new THREE.Color('#3A7BFF')
 const VIOLET = new THREE.Color('#8A2BE2')
 const WHITE = new THREE.Color('#ffffff')
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v))
@@ -164,7 +166,7 @@ function Shards({ count }: { count: number }) {
   )
 }
 
-// ───────── الكتابة ثلاثية الأبعاد «RTX HEMA» ─────────
+// ───────── الكتابة ثلاثية الأبعاد «RTX SHOP» ─────────
 function Title({ tier }: { tier: Tier }) {
   const { size } = useThree()
   const group = useRef<THREE.Group>(null)
@@ -174,7 +176,7 @@ function Title({ tier }: { tier: Tier }) {
     return { height, width: (height * size.width) / size.height }
   }, [size.width, size.height])
   const portrait = viewport.width / viewport.height < 0.9
-  const lines = useMemo(() => layoutLines(portrait ? ['RTX', 'HEMA'] : ['RTX HEMA']), [portrait])
+  const lines = useMemo(() => layoutLines(portrait ? ['RTX', 'SHOP'] : ['RTX SHOP']), [portrait])
   const geometries = useMemo(() => {
     const map = new Map<string, THREE.ExtrudeGeometry>()
     for (const line of lines) for (const g of line.glyphs) if (!map.has(g.char)) map.set(g.char, buildGeometry(g.char))
@@ -203,7 +205,7 @@ function Title({ tier }: { tier: Tier }) {
       {lines.map((line, row) => (
         <group key={row} position={[-line.width / 2, (lines.length - 1) * 0.6 - row * 1.25 - 0.5, 0]}>
           {line.glyphs.map((glyph) => {
-            const color = CYAN.clone().lerp(VIOLET, index++ / Math.max(1, total - 1))
+            const color = index++ < 3 ? GOLD.clone() : CYAN.clone().lerp(BLUE, (index - 4) / Math.max(1, total - 4))
             return (
               <mesh key={`${row}-${glyph.x}`} geometry={geometries.get(glyph.char)} position={[glyph.x, 0, 0]}>
                 <meshPhysicalMaterial color={color} emissive={color} emissiveIntensity={0.9} metalness={1} roughness={0.18} envMapIntensity={1.6} clearcoat={1} />
