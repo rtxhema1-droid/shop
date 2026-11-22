@@ -2,7 +2,11 @@
 
 import { createContext, useContext, useEffect, useRef, type FormEvent, type ReactNode, type RefObject } from 'react'
 import { PackageOpen, X } from 'lucide-react'
+import { currentLang, useLang } from './i18n'
 import type { SessionUser } from './types'
+
+/** ترجمة لنصوص برّه مكونات React (رسائل الأخطاء) */
+const say = (ar: string, en: string) => (currentLang() === 'en' ? en : ar)
 
 export type ShopCtxValue = {
   user: SessionUser | null
@@ -31,11 +35,11 @@ export async function api<T = any>(path: string, method = 'GET', body?: unknown)
     cache: 'no-store',
   })
   const data = await response.json().catch(() => ({}))
-  if (!response.ok) throw new Error(data.error || 'حصلت مشكلة — جرب تاني')
+  if (!response.ok) throw new Error(data.error || say('حصلت مشكلة — جرب تاني', 'Something went wrong. Try again.'))
   return data as T
 }
 
-export const errorText = (reason: unknown, fallback = 'حصلت مشكلة — جرب تاني') => (reason instanceof Error ? reason.message : fallback)
+export const errorText = (reason: unknown, fallback?: string) => (reason instanceof Error ? reason.message : fallback ?? say('حصلت مشكلة — جرب تاني', 'Something went wrong. Try again.'))
 
 export function formValues(event: FormEvent<HTMLFormElement>) {
   return Object.fromEntries(new FormData(event.currentTarget).entries()) as Record<string, string>
@@ -49,6 +53,20 @@ export const statusLabels: Record<string, string> = {
   pending: 'مستني تأكيدك',
   confirmed: 'العميل أكد الاستلام',
   disputed: 'العميل بيقول مستلمش',
+}
+export const statusLabelsEn: Record<string, string> = {
+  new: 'New',
+  accepted: 'Accepted',
+  rejected: 'Rejected',
+  delivered: 'Delivered',
+  pending: 'Awaiting confirmation',
+  confirmed: 'Customer confirmed receipt',
+  disputed: 'Customer says not received',
+}
+/** اسم الحالة باللغة الحالية */
+export function useStatusLabel() {
+  const { lang } = useLang()
+  return (status: string) => (lang === 'en' ? statusLabelsEn : statusLabels)[status] ?? status
 }
 
 export function discountPercent(price: number, old: number | null | undefined) {
@@ -67,7 +85,8 @@ export function Field({ label, hint, children, className = '' }: { label: string
 }
 
 export function StatusBadge({ status }: { status: string }) {
-  return <span className={`badge badge-${status}`}>{statusLabels[status] ?? status}</span>
+  const label = useStatusLabel()
+  return <span className={`badge badge-${status}`}>{label(status)}</span>
 }
 
 /** حالة فاضية: دايماً بتقترح الخطوة الجاية (action) */
@@ -117,6 +136,7 @@ export function useFocusTrap(open: boolean, ref: RefObject<HTMLElement | null>) 
 }
 
 export function Modal({ open, onClose, title, children, size = 'md' }: { open: boolean; onClose: () => void; title?: string; children: ReactNode; size?: 'sm' | 'md' | 'lg' }) {
+  const { tr } = useLang()
   const ref = useRef<HTMLDivElement>(null)
   useEffect(() => {
     if (!open) return
@@ -135,8 +155,8 @@ export function Modal({ open, onClose, title, children, size = 'md' }: { open: b
   if (!open) return null
   return (
     <div className="overlay" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
-      <div className={`modal modal-${size}`} role="dialog" aria-modal="true" aria-label={title ?? 'نافذة'} ref={ref} tabIndex={-1}>
-        <button className="icon-btn modal-close" onClick={onClose} aria-label="إغلاق" type="button"><X /></button>
+      <div className={`modal modal-${size}`} role="dialog" aria-modal="true" aria-label={title ?? tr('نافذة', 'Dialog')} ref={ref} tabIndex={-1}>
+        <button className="icon-btn modal-close" onClick={onClose} aria-label={tr('إغلاق', 'Close')} type="button"><X /></button>
         {title && <h2 className="modal-title">{title}</h2>}
         {children}
       </div>
@@ -146,13 +166,13 @@ export function Modal({ open, onClose, title, children, size = 'md' }: { open: b
 
 /** بيصغّر الصورة في المتصفح قبل الرفع عشان الموقع يفضل سريع */
 export async function imageToDataUrl(file: File): Promise<string> {
-  if (!/^image\/(jpeg|png|webp)$/.test(file.type)) throw new Error('الصورة لازم تبقى JPG أو PNG أو WEBP')
+  if (!/^image\/(jpeg|png|webp)$/.test(file.type)) throw new Error(say('الصورة لازم تبقى JPG أو PNG أو WEBP', 'The image must be JPG, PNG or WEBP'))
   const url = URL.createObjectURL(file)
   try {
     const image = await new Promise<HTMLImageElement>((resolve, reject) => {
       const element = new Image()
       element.onload = () => resolve(element)
-      element.onerror = () => reject(new Error('مقدرتش أقرأ الصورة دي'))
+      element.onerror = () => reject(new Error(say('مقدرتش أقرأ الصورة دي', 'Could not read that image')))
       element.src = url
     })
     for (const [max, quality] of [[900, 0.82], [800, 0.7], [640, 0.6], [480, 0.5]] as const) {
@@ -161,14 +181,14 @@ export async function imageToDataUrl(file: File): Promise<string> {
       canvas.width = Math.max(1, Math.round(image.width * scale))
       canvas.height = Math.max(1, Math.round(image.height * scale))
       const context = canvas.getContext('2d')
-      if (!context) throw new Error('المتصفح مش بيدعم تجهيز الصور')
+      if (!context) throw new Error(say('المتصفح مش بيدعم تجهيز الصور', 'This browser cannot process images'))
       context.fillStyle = '#ffffff'
       context.fillRect(0, 0, canvas.width, canvas.height)
       context.drawImage(image, 0, 0, canvas.width, canvas.height)
       const data = canvas.toDataURL('image/jpeg', quality)
       if (data.length < 450_000) return data
     }
-    throw new Error('الصورة كبيرة أوي — اختار صورة أصغر')
+    throw new Error(say('الصورة كبيرة أوي — اختار صورة أصغر', 'Image is too large. Pick a smaller one'))
   } finally {
     URL.revokeObjectURL(url)
   }

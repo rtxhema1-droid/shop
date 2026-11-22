@@ -4,7 +4,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { MAX_QTY_PER_PRODUCT } from '@/lib/config'
 import { CartFly, CrystalBackdrop, UiFx, flyThrough } from '../rtx3d'
 import { AuthModal, WelcomeAuthScreen } from './auth'
-import { WelcomeToast } from './welcome-toast'
+import { EntranceIntro } from './intro'
+import { useLang } from './i18n'
 import { CartDrawer, OrderSuccess, type CartLine, type PlacedOrder } from './cart'
 import { buildTree, categoryMatcher, countByCategory } from './category-utils'
 import { DashboardApp } from './dashboard'
@@ -19,6 +20,7 @@ type Props = { user: SessionUser | null; catalog: Catalog; initialDashboard: Das
 const CART_KEY = 'rtx-cart'
 
 export function ShopApp({ user, catalog: initialCatalog, initialDashboard }: Props) {
+  const { tr } = useLang()
   const [catalog, setCatalog] = useState(initialCatalog)
   const [dashboard, setDashboard] = useState(initialDashboard)
   const [view, setView] = useState<View>('store')
@@ -32,7 +34,7 @@ export function ShopApp({ user, catalog: initialCatalog, initialDashboard }: Pro
   const [theme, setTheme] = useState<'dark' | 'light'>('dark')
   const [selected, setSelected] = useState<string | null>(null)
   const [query, setQuery] = useState('')
-  const [welcome, setWelcome] = useState(false)
+  const [welcome, setWelcome] = useState<'in' | 'up' | null>(null)
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const staff = user?.role === 'owner' || user?.role === 'vendor'
 
@@ -141,12 +143,12 @@ export function ShopApp({ user, catalog: initialCatalog, initialDashboard }: Pro
 
   function addToCart(product: Product, quantity = 1) {
     if (product.stock <= 0) {
-      notify('المنتج ده نفد المخزون — كلّمنا على واتساب')
+      notify(tr('المنتج ده نفد — كلّمنا على واتساب', 'Sold out. Ask us on WhatsApp.'))
       return
     }
     setCart((current) => ({ ...current, [product.id]: Math.min((current[product.id] ?? 0) + quantity, product.stock, MAX_QTY_PER_PRODUCT) }))
     setBump((value) => value + 1)
-    notify(`«${product.name}» اتضاف للسلة`)
+    notify(tr(`«${product.name}» اتضاف للسلة`, `“${product.name}” added to cart`))
   }
   function setQty(id: string, quantity: number) {
     setCart((current) => {
@@ -170,12 +172,15 @@ export function ShopApp({ user, catalog: initialCatalog, initialDashboard }: Pro
     await Promise.all([reloadDashboard(), reloadCatalog()])
   }
 
-  // بعد الدخول الصفحة بتتحمّل تاني، فالعلامة دي بتقول إن الترحيب يظهر مرة واحدة
+  // بعد الدخول الصفحة بتتحمّل تاني، فالعلامة دي بتقول إن مدخل المتجر (الشتر) يظهر مرة واحدة
   useEffect(() => {
     try {
-      if (user && window.sessionStorage.getItem('rtx-welcome')) {
+      const flag = window.sessionStorage.getItem('rtx-welcome')
+      if (user && flag) {
         window.sessionStorage.removeItem('rtx-welcome')
-        setWelcome(true)
+        setWelcome(flag === 'up' ? 'up' : 'in')
+      } else {
+        delete document.documentElement.dataset.intro
       }
     } catch {}
   }, [user])
@@ -184,7 +189,6 @@ export function ShopApp({ user, catalog: initialCatalog, initialDashboard }: Pro
   if (!user) {
     return (
       <ShopCtx.Provider value={ctx}>
-        <CrystalBackdrop ambient />
         <WelcomeAuthScreen />
         <div className={`toast ${toast ? 'show' : ''}`} role="status" aria-live="polite">{toast}</div>
       </ShopCtx.Provider>
@@ -236,8 +240,8 @@ export function ShopApp({ user, catalog: initialCatalog, initialDashboard }: Pro
       <CrystalBackdrop ambient={view !== 'store'} />
       <UiFx />
       <CartFly bump={bump} />
-      {body}
-      {welcome && <WelcomeToast onDone={() => setWelcome(false)} />}
+      <div className="shell">{body}</div>
+      {welcome && user && <EntranceIntro name={user.name} mode={welcome} onDone={() => setWelcome(null)} />}
       <AuthModal mode={auth} onMode={setAuth} onClose={() => setAuth(null)} />
       <div className={`toast ${toast ? 'show' : ''}`} role="status" aria-live="polite">{toast}</div>
     </ShopCtx.Provider>

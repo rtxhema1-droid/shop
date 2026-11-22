@@ -7,12 +7,12 @@ export function IconDefs() {
     <svg width="0" height="0" aria-hidden="true" focusable="false" style={{ position: 'absolute', pointerEvents: 'none' }}>
       <defs>
         <linearGradient id="rtx-ig" gradientUnits="userSpaceOnUse" x1="2" y1="2" x2="22" y2="22">
-          <stop offset="0" stopColor="#00F0FF" />
-          <stop offset="1" stopColor="#B77BFF" />
+          <stop offset="0" stopColor="#4FE3C6" />
+          <stop offset="1" stopColor="#A9B6FF" />
         </linearGradient>
         <linearGradient id="rtx-ig-hot" gradientUnits="userSpaceOnUse" x1="2" y1="2" x2="22" y2="22">
-          <stop offset="0" stopColor="#FFC857" />
-          <stop offset="1" stopColor="#00F0FF" />
+          <stop offset="0" stopColor="#FFB86B" />
+          <stop offset="1" stopColor="#4FE3C6" />
         </linearGradient>
       </defs>
     </svg>

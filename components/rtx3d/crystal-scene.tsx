@@ -10,10 +10,10 @@ import { fx } from './fx-store'
 
 export type Tier = 'high' | 'low'
 
-const CYAN = new THREE.Color('#00F0FF')
-const GOLD = new THREE.Color('#FFC857')
-const BLUE = new THREE.Color('#3A7BFF')
-const VIOLET = new THREE.Color('#8A2BE2')
+const CYAN = new THREE.Color('#4FE3C6')
+const GOLD = new THREE.Color('#FFB86B')
+const BLUE = new THREE.Color('#6FA3FF')
+const VIOLET = new THREE.Color('#5E7F9E')
 const WHITE = new THREE.Color('#ffffff')
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v))
 
@@ -95,7 +95,7 @@ function Crystal({ tier, degraded }: { tier: Tier; degraded: boolean }) {
           backsideThickness={0.8}
           samples={high ? 6 : 3}
           resolution={high ? 512 : 256}
-          attenuationColor="#8A2BE2"
+          attenuationColor="#5E7F9E"
           attenuationDistance={2.4}
           envMapIntensity={1.6}
           toneMapped
@@ -209,7 +209,7 @@ function Title({ tier }: { tier: Tier }) {
             return (
               <mesh key={`${row}-${glyph.x}`} geometry={geometries.get(glyph.char)} position={[glyph.x, 0, 0]}>
                 <meshPhysicalMaterial color={color} emissive={color} emissiveIntensity={0.9} metalness={1} roughness={0.18} envMapIntensity={1.6} clearcoat={1} />
-                {tier === 'high' && <Edges threshold={20} color="#c9fbff" />}
+                {tier === 'high' && <Edges threshold={20} color="#D7FFF6" />}
               </mesh>
             )
           })}
@@ -256,13 +256,13 @@ export default function CrystalScene({ tier, onReady }: { tier: Tier; onReady: (
       />
       <Rig />
       <ambientLight intensity={0.15} />
-      <pointLight position={[-4, 2.5, 3]} color="#00F0FF" intensity={90} distance={14} decay={2} />
-      <pointLight position={[4, -2, 3]} color="#8A2BE2" intensity={80} distance={14} decay={2} />
+      <pointLight position={[-4, 2.5, 3]} color="#4FE3C6" intensity={90} distance={14} decay={2} />
+      <pointLight position={[4, -2, 3]} color="#5E7F9E" intensity={80} distance={14} decay={2} />
       <pointLight position={[0, 4, -3]} color="#ffffff" intensity={25} distance={12} decay={2} />
       {/* بيئة انعكاسات مصنوعة من أضواء (مفيش تحميل HDR من الإنترنت) */}
       <Environment resolution={256} frames={1}>
-        <Lightformer form="rect" intensity={6} color="#00F0FF" position={[-5, 2, -2]} scale={[8, 3, 1]} />
-        <Lightformer form="rect" intensity={5} color="#8A2BE2" position={[5, -1, -3]} scale={[8, 4, 1]} />
+        <Lightformer form="rect" intensity={6} color="#4FE3C6" position={[-5, 2, -2]} scale={[8, 3, 1]} />
+        <Lightformer form="rect" intensity={5} color="#5E7F9E" position={[5, -1, -3]} scale={[8, 4, 1]} />
         <Lightformer form="ring" intensity={4} color="#ffffff" position={[0, 4, 2]} scale={4} />
         <Lightformer form="rect" intensity={2} color="#ffffff" position={[0, -5, 1]} scale={[10, 1, 1]} />
       </Environment>

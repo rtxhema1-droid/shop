@@ -18,7 +18,7 @@ export function HoloCard({ children, className = '', strength = 9 }: { children:
   const rotateX = useTransform(sy, [0, 1], [strength, -strength])
   const px = useTransform(sx, (v) => `${v * 100}%`)
   const py = useTransform(sy, (v) => `${v * 100}%`)
-  const sheen = useMotionTemplate`radial-gradient(280px circle at ${px} ${py}, rgba(255,255,255,0.2), rgba(0,240,255,0.08) 40%, transparent 70%)`
+  const sheen = useMotionTemplate`radial-gradient(280px circle at ${px} ${py}, rgba(255,255,255,0.2), rgba(79,227,198,0.1) 40%, transparent 70%)`
 
   const move = (event: PointerEvent<HTMLDivElement>) => {
     const node = ref.current
