@@ -2,9 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { MAX_QTY_PER_PRODUCT } from '@/lib/config'
-import { CartFly, CrystalBackdrop, UiFx, flyThrough } from '../rtx3d'
+import { CartFly, UiFx, flyThrough } from '../rtx3d'
 import { AuthModal, WelcomeAuthScreen } from './auth'
-import { EntranceIntro } from './intro'
+import { LogoIntro } from './intro'
 import { useLang } from './i18n'
 import { CartDrawer, OrderSuccess, type CartLine, type PlacedOrder } from './cart'
 import { buildTree, categoryMatcher, countByCategory } from './category-utils'
@@ -34,7 +34,7 @@ export function ShopApp({ user, catalog: initialCatalog, initialDashboard }: Pro
   const [theme, setTheme] = useState<'dark' | 'light'>('dark')
   const [selected, setSelected] = useState<string | null>(null)
   const [query, setQuery] = useState('')
-  const [welcome, setWelcome] = useState<'in' | 'up' | null>(null)
+  const [intro, setIntro] = useState(true)
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const staff = user?.role === 'owner' || user?.role === 'vendor'
 
@@ -172,24 +172,17 @@ export function ShopApp({ user, catalog: initialCatalog, initialDashboard }: Pro
     await Promise.all([reloadDashboard(), reloadCatalog()])
   }
 
-  // بعد الدخول الصفحة بتتحمّل تاني، فالعلامة دي بتقول إن مدخل المتجر (الشتر) يظهر مرة واحدة
+  // المقدمة (اللوجو في نص الشاشة) بتشتغل مع كل تحميل للصفحة، وعلامة الدخول القديمة بتتمسح
   useEffect(() => {
-    try {
-      const flag = window.sessionStorage.getItem('rtx-welcome')
-      if (user && flag) {
-        window.sessionStorage.removeItem('rtx-welcome')
-        setWelcome(flag === 'up' ? 'up' : 'in')
-      } else {
-        delete document.documentElement.dataset.intro
-      }
-    } catch {}
-  }, [user])
+    try { window.sessionStorage.removeItem('rtx-welcome') } catch {}
+  }, [])
 
   // الزائر بيشوف بوابة الدخول الأول، والمتجر بيتفتح بعد تسجيل الدخول
   if (!user) {
     return (
       <ShopCtx.Provider value={ctx}>
         <WelcomeAuthScreen />
+        {intro && <LogoIntro onDone={() => setIntro(false)} />}
         <div className={`toast ${toast ? 'show' : ''}`} role="status" aria-live="polite">{toast}</div>
       </ShopCtx.Provider>
     )
@@ -237,11 +230,10 @@ export function ShopApp({ user, catalog: initialCatalog, initialDashboard }: Pro
 
   return (
     <ShopCtx.Provider value={ctx}>
-      <CrystalBackdrop ambient={view !== 'store'} />
       <UiFx />
       <CartFly bump={bump} />
       <div className="shell">{body}</div>
-      {welcome && user && <EntranceIntro name={user.name} mode={welcome} onDone={() => setWelcome(null)} />}
+      {intro && <LogoIntro onDone={() => setIntro(false)} />}
       <AuthModal mode={auth} onMode={setAuth} onClose={() => setAuth(null)} />
       <div className={`toast ${toast ? 'show' : ''}`} role="status" aria-live="polite">{toast}</div>
     </ShopCtx.Provider>

@@ -3,6 +3,7 @@ import { Cairo, El_Messiri, Instrument_Serif } from 'next/font/google'
 import './globals.css'
 import './rtx-hema.css'
 import './rtx-nova.css'
+import './rtx-zenin.css'
 import { IconDefs } from '@/components/rtx3d/icon-defs'
 import { LangProvider } from '@/components/shop/i18n'
 
@@ -33,7 +34,7 @@ export const viewport: Viewport = {
 }
 
 // بيتنفّذ قبل أول رسم: اللغة المحفوظة (اتجاه الصفحة) + علامة «مدخل المتجر» عشان المتجر ميظهرش لحظة قبل الشتر
-const bootScript = `try{var d=document.documentElement;d.dataset.theme='dark';if(localStorage.getItem('rtx-lang')==='en'){d.lang='en';d.dir='ltr'}if(sessionStorage.getItem('rtx-welcome'))d.dataset.intro='1'}catch(e){document.documentElement.dataset.theme='dark'}`
+const bootScript = `try{var d=document.documentElement;d.dataset.theme='dark';d.dataset.intro='1';d.dataset.zi='1';if(localStorage.getItem('rtx-lang')==='en'){d.lang='en';d.dir='ltr'}}catch(e){document.documentElement.dataset.theme='dark';document.documentElement.dataset.intro='1';document.documentElement.dataset.zi='1'}`
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (

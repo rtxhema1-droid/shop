@@ -192,8 +192,8 @@ function Lamp({ lit, onToggle }: { lit: boolean; onToggle: () => void }) {
     <>
       <defs>
         <linearGradient id="lamp-beam" gradientUnits="userSpaceOnUse" x1="0" y1="108" x2="0" y2="356">
-          <stop offset="0" stopColor="#7DF3D6" stopOpacity="0.5" />
-          <stop offset="1" stopColor="#7DF3D6" stopOpacity="0" />
+          <stop offset="0" stopColor="#CCD0CF" stopOpacity="0.5" />
+          <stop offset="1" stopColor="#CCD0CF" stopOpacity="0" />
         </linearGradient>
         <linearGradient id="lamp-shade" x1="0" y1="0" x2="1" y2="0">
           <stop offset="0" stopColor="#1B2C38" />

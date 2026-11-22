@@ -6,23 +6,20 @@ import {
   PackageSearch, Plus, Search, ShoppingBag, ShoppingCart, Store, UserRound, X,
   Cpu, Gamepad2, Headphones, Sparkles,
 } from 'lucide-react'
-import { CrystalButton, FxToggle, GlassDock, HoloCard, HoloPodium, flyThrough, fx } from '../rtx3d'
+import { CrystalButton, HoloCard, HoloPodium, flyThrough, fx } from '../rtx3d'
 import { MAX_QTY_PER_PRODUCT, PLACEHOLDERS, STORE_NAME, WHATSAPP_DISPLAY } from '@/lib/config'
 import { whatsappLink } from '@/lib/format'
 import { categoryCover, categoryPath, type CategoryNode } from './category-utils'
 import { Hue, LangSwitch, useLang, type HueName } from './i18n'
 import { ProductImage } from './product-image'
+import { Logo } from './logo'
 import { Empty, Modal, discountPercent, useShop } from './shared'
 import type { Catalog, Product } from './types'
 
 const style = (vars: Record<string, string | number>) => vars as CSSProperties
 
 function Wordmark({ small }: { small?: boolean }) {
-  return (
-    <span className={`wordmark ${small ? 'wordmark-sm' : ''}`} aria-hidden="true">
-      <span>RTX</span><i /><em>SHOP</em>
-    </span>
-  )
+  return <Logo className={small ? 'zlogo-sm' : ''} />
 }
 
 // ───────────────────────── الأقسام (قايمة منسدلة) ─────────────────────────
@@ -198,8 +195,6 @@ export function Header(props: {
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
   }, [])
-  const activeTop = props.tree.find((node) => node.id === props.selected || node.children.some((child) => child.id === props.selected))?.id ?? null
-  const dockItems = [{ id: null, label: tr('الكل', 'All') }, ...props.tree.slice(0, 7).map((node) => ({ id: node.id as string | null, label: node.name }))]
 
   return (
     <>
@@ -212,9 +207,7 @@ export function Header(props: {
       </div>
       <header className="header">
         <div className="header-in">
-          <button className="logo" type="button" onClick={() => { setDockTab('home'); props.onHome() }} aria-label={`${STORE_NAME} — ${tr('الرئيسية', 'Home')}`}>
-            <Wordmark />
-          </button>
+          <div className="header-side">
           <MegaMenu tree={props.tree} counts={props.counts} selected={props.selected} onSelect={props.onSelect} />
           <label className="search">
             <Search />
@@ -222,9 +215,12 @@ export function Header(props: {
             {!props.query && <kbd className="search-kbd" aria-hidden="true">/</kbd>}
             {props.query && <button type="button" className="icon-btn" onClick={() => props.onQuery('')} aria-label={tr('مسح البحث', 'Clear search')}><X /></button>}
           </label>
+          </div>
+          <button className="logo" type="button" onClick={() => { setDockTab('home'); props.onHome() }} aria-label={`${STORE_NAME} — ${tr('الرئيسية', 'Home')}`}>
+            <Wordmark />
+          </button>
           <div className="header-actions">
             <LangSwitch />
-            <FxToggle />
             <UserMenu onOrders={props.onOrders} onDash={props.onDash} />
             <button className="cart-btn" type="button" onClick={props.onCart} aria-label={`${tr('السلة', 'Cart')} (${props.cartCount})`} data-tip={tr('السلة', 'Cart')}>
               <ShoppingCart />
@@ -232,9 +228,6 @@ export function Header(props: {
             </button>
           </div>
         </div>
-        <nav className="subnav" aria-label={tr('أقسام سريعة', 'Quick categories')}>
-          <GlassDock label={tr('أقسام سريعة', 'Quick categories')} items={dockItems} active={activeTop} onSelect={props.onSelect} />
-        </nav>
       </header>
 
       <nav className="dock" aria-label={tr('التنقل السريع', 'Quick navigation')}>
