@@ -84,7 +84,7 @@ function createPool(url: string) {
   parsed.searchParams.delete('supa')
   return new pg.Pool({
     connectionString: parsed.toString(),
-    ssl: local ? undefined : { rejectUnauthorized: false },
+    ssl: local ? undefined : { rejectUnauthorized: true, ca: process.env.DATABASE_CA_CERT?.replace(/\\n/g, '\n') || undefined },
     max: Number(process.env.PG_POOL_MAX || 3),
     idleTimeoutMillis: 10_000,
     connectionTimeoutMillis: 10_000,
