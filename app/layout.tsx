@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next'
+import { headers } from 'next/headers'
 import { Cairo, El_Messiri, Instrument_Serif } from 'next/font/google'
 import './globals.css'
 import './rtx-hema.css'
@@ -36,11 +37,13 @@ export const viewport: Viewport = {
 // بيتنفّذ قبل أول رسم: اللغة المحفوظة (اتجاه الصفحة) + علامة «مدخل المتجر» عشان المتجر ميظهرش لحظة قبل الشتر
 const bootScript = `try{var d=document.documentElement;d.dataset.theme='dark';d.dataset.intro='1';d.dataset.zi='1';if(localStorage.getItem('rtx-lang')==='en'){d.lang='en';d.dir='ltr'}}catch(e){document.documentElement.dataset.theme='dark';document.documentElement.dataset.intro='1';document.documentElement.dataset.zi='1'}`
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  // nonce بيتولّد لكل طلب في proxy.ts وبيتحط في CSP
+  const nonce = (await headers()).get('x-nonce') ?? undefined
   return (
     <html lang="ar" dir="rtl" className={`${cairo.variable} ${serif.variable} ${messiri.variable}`} data-theme="dark" data-fx="off" suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: bootScript }} />
+        <script nonce={nonce} dangerouslySetInnerHTML={{ __html: bootScript }} />
       </head>
       <body>
         <IconDefs />
